@@ -1,9 +1,19 @@
 /* eslint-disable prettier/prettier */
 
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task } from './task.model';
+import { Task, TaskStatus } from './task.model';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { GetFilteredTasksDto } from './dto/get-tasks-filter.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -17,5 +27,32 @@ export class TasksController {
   @Post()
   createTask(@Body() createTaskDto: CreateTaskDto): Task {
     return this.tasksService.createTask(createTaskDto);
+  }
+
+  @Get('/:id')
+  getTaskById(@Param('id') id: string): Task | undefined {
+    return this.tasksService.getTaskById(id);
+  }
+
+  @Delete('/:id')
+  deleteTaskById(@Param('id') id: string): void {
+    return this.tasksService.deleteTaskById(id);
+  }
+
+  @Patch('/:id/:status')
+  updateTaskStatusById(
+    @Param('id') id: string,
+    @Param('status') status: TaskStatus,
+  ) {
+    return this.tasksService.updateTaskStatusById(id, status);
+  }
+
+  @Get()
+  getTasks(@Query() filterDto: GetFilteredTasksDto): Task[] {
+    if (Object.keys(filterDto).length) {
+      return this.tasksService.getTasksByQuery(filterDto);
+    } else {
+      return this.tasksService.getAllTasks();
+    }
   }
 }
