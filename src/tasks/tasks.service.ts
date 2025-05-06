@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { v7 as uuid } from 'uuid';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -29,21 +29,27 @@ export class TasksService {
   }
 
   getTaskById(id: string): Task | undefined {
-    return this.tasks.find((task) => task.id === id);
+    const foundedTask = this.tasks.find((task) => task.id === id);
+    if (!foundedTask) {
+      throw new NotFoundException(`TASK WITH id ${id} not found!`);
+    } else {
+      return foundedTask;
+    }
   }
 
   deleteTaskById(id: string): void {
-    this.tasks = this.tasks.filter((task) => task.id !== id);
+    const foundedTask = this.getTaskById(id);
+    if (!foundedTask) return;
+
+    this.tasks = this.tasks.filter((task) => task.id !== foundedTask.id);
   }
 
   updateTaskStatusById(id: string, status: TaskStatus): Task | void {
-    const updatedTask = this.tasks.forEach((task) => {
-      if (task.id === id) {
-        task.status = status;
-        return task;
-      }
-    });
-    return updatedTask;
+    const foundedTask = this.getTaskById(id);
+    if (foundedTask) {
+      foundedTask.status = status;
+    }
+    return foundedTask;
   }
 
   getTasksByQuery(filterDto: GetFilteredTasksDto): Task[] {
