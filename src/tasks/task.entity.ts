@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
 
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { TaskStatus } from './task.model';
+import { TaskStatus } from './task-status.model';
 
 @Entity()
 export class Task {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid') // For PostgreSQL UUID
   id: string;
 
   @Column()
