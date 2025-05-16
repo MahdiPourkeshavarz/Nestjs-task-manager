@@ -28,6 +28,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 @UseGuards(AuthGuard)
 export class TasksController {
   private logger = new Logger('tasksController');
+
   constructor(private tasksService: TasksService) {}
 
   @Get()
