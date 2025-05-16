@@ -9,11 +9,13 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import {
   ConflictException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 @EntityRepository(User)
 export class UsersRepository extends Repository<User> {
+  private logger = new Logger('usersRepo');
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
     const saltRounds = 10;
@@ -24,10 +26,17 @@ export class UsersRepository extends Repository<User> {
     });
     try {
       await this.save(user);
+      this.logger.log(
+        `user: ${JSON.stringify(authCredentialsDto)} successfully created`,
+      );
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('username already exists');
       } else {
+        this.logger.error(
+          `failed to created user ${JSON.stringify(authCredentialsDto)}`,
+          error.stack,
+        );
         throw new InternalServerErrorException();
       }
     }

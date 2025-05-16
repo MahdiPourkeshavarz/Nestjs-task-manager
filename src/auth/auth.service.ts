@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/await-thenable */
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,7 @@ export class AuthService {
     @InjectRepository(UsersRepository)
     private usersRepository: UsersRepository,
     private jwtService: JwtService,
+    private logger = new Logger('userService'),
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
@@ -31,8 +32,14 @@ export class AuthService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const payload: JwtPayload = { username };
       const accessToken: string = await this.jwtService.sign(payload);
+      this.logger.log(
+        `user: ${JSON.stringify(authCredentialsDto)} has successfully loggedIn`,
+      );
       return { accessToken };
     } else {
+      this.logger.error(
+        `Login operation for user: ${JSON.stringify(authCredentialsDto)} failed!`,
+      );
       throw new UnauthorizedException('please check your login credentials');
     }
   }
